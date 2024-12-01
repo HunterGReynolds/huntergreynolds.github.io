@@ -33,6 +33,7 @@ post_title=$1
 post_file="_posts/${today}-${post_title}.md"
 
 if [[ -d "_posts" ]]; then
-    echo -e "---\ntitle:\ndate: ${today} ${now}\ntags:\ncategories:\n---\n" >> ${post_file}
+    echo -e "---\ntitle:\ndate: ${today} ${now}\nmedia_subpath: /assets/images/${today}-${post_title}.d\ntags:\ncategories:\n---\n" >> "${post_file}"
+    mkdir -p "assets/images/${today}-${post_title}.d"
 fi
 
