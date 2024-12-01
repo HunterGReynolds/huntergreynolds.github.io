@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-if [[ $# != "1" ]]; then
+if [ $# != "1" ]; then
     echo "Just the title of the post please"
     exit 1
 fi
@@ -32,8 +32,10 @@ now=$(date "+%H:%M:%S %z")
 post_title=$1
 post_file="_posts/${today}-${post_title}.md"
 
-if [[ -d "_posts" ]]; then
-    echo -e "---\ntitle:\ndate: ${today} ${now}\nmedia_subpath: /assets/images/${today}-${post_title}.d\ntags:\ncategories:\n---\n" >> "${post_file}"
+if [ -d "_posts" ]; then
+    #echo "---\ntitle:\ndate: ${today} ${now}\nmedia_subpath: /assets/images/${today}-${post_title}.d\ntags:\ncategories:\n---\n" >> "${post_file}"
+    printf -- "---\ntitle:\ndate: %s %s\nmedia_subpath: /assets/images/%s-%s.d\ntags:\ncategories:\n---\n" "$today" "$now" "$today" "$post_title" >> "$post_file"
+
     mkdir -p "assets/images/${today}-${post_title}.d"
 fi
 
