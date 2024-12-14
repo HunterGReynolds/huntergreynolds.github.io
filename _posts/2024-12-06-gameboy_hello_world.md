@@ -1,5 +1,5 @@
 ---
-title: Making a Hello World Gameboy ROM
+title: Making a "Hello World" Gameboy ROM
 description: Using RGBDS to create a "Hello World" program for the Nintendo Gameboy
 date: 2024-12-06 00:50:21 -0500
 media_subpath: /assets/images/2024-12-06-gameboy_hello_world.d
@@ -7,9 +7,12 @@ tags: [gameboy, rgbds, assembly]
 categories: [Gameboy]
 ---
 
+## Getting Started
+
 The Nintendo Gameboy is probably my favorite handheld gaming console. I've had A Gameboy Color since I was a child,
 and it still sits on my entertainment center today. I decided that I wanted to write a program to run on the device,
-so I started figuring out how to go about that.
+so I started figuring out how to go about that. Here's a quick-and-dirty guide to getting started programming for the
+Gameboy.
 
 ![My Gameboy Color](gbc.jpeg){: width="500"}
 _My childhood Pokemon Gold/Silver Gameboy Color_
@@ -20,12 +23,19 @@ are essential reading if you want to learn about the Gameboy. In this post, I'll
 writing a "Hello World" program and running it on a Gameboy emulator (or real hardware if you have a flash cart or
 something).
 
->For this post, I'll only be talking about writing code for the DMG Gameboy. The Gameboy Color is compatible with DMG
->games, just with beefier hardware and of course a color display.
+>For this post, I'll only be talking about the Original (DMG/MGB) Gameboy. The Gameboy Color is
+>compatible with Gameboy games, just with beefier hardware and of course a color display. There are some hardware quirks
+>that are different between the models, but nothing that will affect anything we're doing.
 {: .prompt-info}
 
 We'll start with creating the font and the background tilemap that will display our image. After those are
-created, we can get to the actual code and use them. All of the code for this project can be found [here on Github](https://github.com/HunterGReynolds/gameboy_hello_world).
+created, we can get to the actual code and use them.
+
+All of the code for this project can be found [here on Github](https://github.com/HunterGReynolds/gameboy_hello_world).
+
+You should get an emulator with a decent debugger and high accuracy. I use [the BGB emulator](https://bgb.bircd.org/),
+which is a Windows only application, but it's also tested on Wine. If you're looking for a good open-source emulator
+with a debugger, [Sameboy is a good choice](https://sameboy.github.io/).
 
 ## The Gameboy Screen
 
@@ -51,8 +61,8 @@ Each character needs to fit within the 8x8 square, as that will be a single tile
 If we save the image as a png, we can use rgbgfx to convert the image into a format the Gameboy can use, and that can
 be imported directly into our code.
 
-![My OK-ish Font](font.png){: width="208"}
-_Here's my OK-ish font_
+![My OK-ish Font](font.png){: width="312"}
+_Here's my completed font_
 
 Once we have our font.png saved, we can convert it like so:
 
@@ -66,6 +76,9 @@ blank tile in the output. We do need at least one blank tile, since every space 
 need to use the blank space. We have our font tileset, and now we're ready to start using it.
 
 ## Creating a Tilemap
+
+>I'm going to be using _$XX_ notation for hexadecimal, because that's how you're going to be seeing it in the assembly.
+{: .prompt-info}
 
 So we have a font, but we still have to actually write on something with it. For this, we're going to use a tilemap
 that will be applied to the background. The tilemap is a sequence of tile indices, starting from the top row. For this
@@ -192,7 +205,7 @@ enabled, and interrupts in general are enabled. They are as follows:
 | $60     | Joypad interrupt |
 
 See [here](https://gbdev.io/pandocs/Interrupt_Sources.html) for a more detailed description of each interrupt. The one
-we're interested in here is the Vblank interrupt, as this will fire off once per frame, just after the screen is done
+we're interested in here is the vblank interrupt, as this will fire off once per frame, just after the screen is done
 being drawn. This is important when we want to access VRAM or OAM (sprites and such). See
 [here](https://gbdev.io/pandocs/Rendering.html#ppu-modes) and
 [here](https://gbdev.io/pandocs/OAM_DMA_Transfer.html#oam-dma-bus-conflicts) for explanations of what is accessible
@@ -220,16 +233,17 @@ joypad_interrupt::
     rst $38
     ds ALIGN[3]
 ```
+{: file="interrupts.asm"}
 
 ## The ROM Header
 
-The ROM header is located at $100 - $14f. The first 4 bytes are the only ones we're going to care about
+The ROM header is located at $0100 - $014f. The first 4 bytes are the only ones we're going to care about
 right now, and rgbfix will take care of the rest for us. See
 [this page](https://gbdev.io/pandocs/Power_Up_Sequence.html#monochrome-models-dmg0-dmg-mgb) for an overview of the
 Gameboy boot process, and what the requirements for the header are. 
 
 Basically if the Nintendo logo and header checksum are good, the boot ROM will hand control over to our ROM at address
-$100. Let's go ahead and create the "header.asm" file and define the header like this:
+$0100. Let's go ahead and create the "header.asm" file and define the header like this:
 
 ```
     SECTION "Header", ROM0[$0100]
@@ -239,18 +253,25 @@ $100. Let's go ahead and create the "header.asm" file and define the header like
 {: file="header.asm"}
 
 There's not much to it, because we're really mostly just allocating the space. The section directive here gives an
-explicit location for this code; it's to be located in ROM at address $100. Next we jump to our real code, which will
+explicit location for this code; it's to be located in ROM at address $0100. Next we jump to our real code, which will
 be defined elsewhere. Finally we allocate enough bytes to fill up the remaining space. We have $50 bytes of space to
 fill in total, and we've used 3 of them for the jump instruction, we just fill the remaining $4d bytes with 0. This
 will be filled in by rgbfix after we link our object code.
+
+## What is Vblank?
+In the upcoming sections, I'll be mentioning vblank several times, and that it's important to do certain operations only
+during this period. You can find detailed information [here on the PanDocs](https://gbdev.io/pandocs/Rendering.html#ppu-modes).
+For a quick explanation, the Gameboy's PPU (picture processing unit) draws one row of pixels at a time. After drawing the last
+row, there is a brief period of time until the next frame begins. This period between the screen being completely drawn
+and the next frame starting being drawn is called vblank.
 
 ## Getting our Message on the Screen
 
 Now that we have the boilerplate bits for the ROM header done, we're ready to make the Gameboy display our message.
 We'll start with our entrypoint and main loop.
 
->If you're running this on real hardware, make sure you disable the LCD/PPU **ONLY** during Vblank. Failure to
->heed this warning may result in damage to the Gameboy hardware.
+>If you're running this on real hardware, make sure you disable the LCD/PPU **ONLY** during vblank. Disabling the
+>LCD outside of vblank may cause physical damage to the screen.
 {: .prompt-danger}
 
 ```
@@ -273,7 +294,6 @@ entry_point::
     xor a
     halt
 
-    di
     ;; turn off the LCD/PPU
     ld [rLCDC], a
     ;; turn off the sound system. Recommended to do if it's not being used
@@ -291,11 +311,10 @@ entry_point::
     ;; back on and run our main loop
     ld a, LCDCF_ON | LCDCF_BGON
     ld [rLCDC], a
-    ei
 
 main_loop:
-    xor a
     halt
+    ;; halt the cpu and wait for an interrupt to occur
 
     ld a, [frame_counter]
     inc a
@@ -368,7 +387,7 @@ are 3 basic steps needed to get our code ready to run.
 
 1. Assemble the source
 2. Link the objects
-3. Create the header and pad the ROM for size
+3. Create a valid header and pad the ROM for size
 
 I use Make to automate these tasks, and I keep my sources organized as shown below:
 
@@ -462,5 +481,5 @@ the `frame_counter` label (which should be $c000, the beginning of WRAM) and wat
 ## Now What?
 
 Now that we have a functioning ROM, we have a reasonable base to start building on top of. I'll be using this ROM as
-a starting point for more examples, so keep an eye out here for more Gameboy development posts.
+a starting point for building new examples.
 
