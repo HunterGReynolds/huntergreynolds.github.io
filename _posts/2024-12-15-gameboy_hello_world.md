@@ -1,7 +1,7 @@
 ---
 title: Making a "Hello World" Gameboy ROM
 description: Using RGBDS to create a "Hello World" program for the Nintendo Gameboy
-date: 2024-12-06 00:50:21 -0500
+date: 2024-12-15 17:58:21 -0500
 media_subpath: /assets/images/2024-12-06-gameboy_hello_world.d
 tags: [gameboy, rgbds, assembly]
 categories: [Gameboy]
@@ -258,17 +258,14 @@ be defined elsewhere. Finally we allocate enough bytes to fill up the remaining 
 fill in total, and we've used 3 of them for the jump instruction, we just fill the remaining $4d bytes with 0. This
 will be filled in by rgbfix after we link our object code.
 
-## What is Vblank?
-In the upcoming sections, I'll be mentioning vblank several times, and that it's important to do certain operations only
-during this period. You can find detailed information [here on the PanDocs](https://gbdev.io/pandocs/Rendering.html#ppu-modes).
-For a quick explanation, the Gameboy's PPU (picture processing unit) draws one row of pixels at a time. After drawing the last
-row, there is a brief period of time until the next frame begins. This period between the screen being completely drawn
-and the next frame starting being drawn is called vblank.
-
 ## Getting our Message on the Screen
 
 Now that we have the boilerplate bits for the ROM header done, we're ready to make the Gameboy display our message.
 We'll start with our entrypoint and main loop.
+
+>Reminder: Vblank is the period of time between frames being drawn. It's necessary to wait for this period to perform
+>certain actions and access VRAM. Refer back to [here for more info](#interrupt-handlers).
+{: .prompt-tip}
 
 >If you're running this on real hardware, make sure you disable the LCD/PPU **ONLY** during vblank. Disabling the
 >LCD outside of vblank may cause physical damage to the screen.
@@ -469,6 +466,8 @@ The rgbfix command is also one that does a couple of jobs. First, the `-v` optio
 This includes the Nintendo logo and the checksums. You can tell rgbfix to set other header options, but the defaults
 are fine for this project. The `-p 0xFF` option tells it to pad the ROM size to a valid cartridge size, using $ff bytes
 to pad with. Valid cartridge sizes are powers of 2 between 32KB and 8192KB, inclusive.
+
+## Running the ROM
 
 The result is a proper ROM, so now we just load it into an emulator and...
 
