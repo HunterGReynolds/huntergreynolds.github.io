@@ -61,7 +61,7 @@ Each character needs to fit within the 8x8 square, as that will be a single tile
 If we save the image as a png, we can use rgbgfx to convert the image into a format the Gameboy can use, and that can
 be imported directly into our code.
 
-![My OK-ish Font](font.png){: width="312"}
+![My OK-ish Font](font.png){: width="312"}{:style="image-rendering: crisp-edges;"}
 _Here's my completed font_
 
 Once we have our font.png saved, we can convert it like so:
@@ -471,7 +471,7 @@ to pad with. Valid cartridge sizes are powers of 2 between 32KB and 8192KB, incl
 
 The result is a proper ROM, so now we just load it into an emulator and...
 
-![](bgb.png){: width="320"}
+![](bgb.png){: width="320"}{:style="image-rendering: crisp-edges;"}
 _It works!_
 
 We have a functioning ROM now. If you have a debugger open, you can check the sym or map file for the location of
