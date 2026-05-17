@@ -1,0 +1,11 @@
+body {
+  font-family: Inter, Arial, sans-serif;
+}
+code {
+  font-family: "Cascadia Mono", monospace;
+  font-size: 90%;
+}
+pre.src, .example {
+  font-family: "Cascadia Mono", monospace;
+  font-size: 90%;
+}

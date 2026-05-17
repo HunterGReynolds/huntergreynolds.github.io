@@ -1,0 +1,179 @@
+:root {
+    color-scheme: light dark;
+}
+
+body {
+    max-width: 1000px;
+    min-height: 95vh;
+    margin: auto;
+    padding: 1em;
+}
+
+.title {
+    padding: 1em;
+    margin: auto;
+    text-align: center;
+}
+
+nav {
+    border-bottom: 1px solid black;
+    text-align: center;
+}
+.nav-item ol {
+    list-style-type: none;
+    padding-left: 0;
+}
+.nav-item {
+    display: inline-block;
+    padding: 1em;
+}
+
+.org-ol {
+    list-style-type: disc;
+}
+.org-ol li {
+    padding: 5px;
+}
+
+#postamble {
+    min-height: 50px;
+    border-top: 1px solid black;
+}
+
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+#content {
+    flex: 1;
+}
+
+#table-of-contents {
+    max-width: 70%;
+    border: 1px solid black;
+    padding: 5px;
+    margin: auto;
+    border-radius: 10px;
+    background: light-dark(#dde, #223);
+}
+
+pre.src {
+    background: light-dark(#eee, #222);
+    max-width: 90%;
+    padding: 1em;
+    margin-left: 20px;
+    border: 1px solid #ccc;
+    border-left: 5px solid light-dark(#ccc, #333);
+    padding-left: 5px;
+    overflow-x: auto;
+}
+code {
+    background: light-dark(#f0f0f0, #222222);
+}
+
+pre.example {
+    text-align: center;
+}
+
+blockquote {
+    background: light-dark(#f9f9f9, #333333);
+    max-width: 90%;
+    padding: 3px 1em 3px;
+    margin-left: 20px;
+    border-left: 5px solid light-dark(#ccc, #333);
+}
+.warning-box {
+    background: light-dark(#fcc, #f55);
+    border-left: 5px solid red;
+    max-width: 90%;
+    padding: 3px 1em 3px;
+    margin-left: 20px;
+    border: 1px solid red;
+    border-left: 5px solid red;
+}
+
+img {
+    display: block;
+    max-width: 80%;
+    margin: auto;
+}
+img.bgb_screenshot {
+    image-rendering: pixelated;
+    width: 320px;
+    height: auto;
+    border: 3px solid black;
+}
+img.double_size {
+    zoom: 2;
+    image-rendering: pixelated;
+}
+
+table {
+    margin:auto;
+}
+thead, tfoot, tr:nth-child(even) {
+    background: light-dark(#eee, #333);
+}
+
+/* syntax highlighting */
+
+.org-keyword {
+    /* font-lock-keyword-face */
+    color: #A52A2A;
+    font-weight: bold;
+}
+.org-function-call {
+    /* font-lock-function-call-face */
+    color: #00578E;
+    font-weight: bold;
+}
+.org-function-name {
+    /* font-lock-function-name-face */
+    color: #00578E;
+    font-weight: bold;
+}
+.org-comment {
+    /* font-lock-comment-face */
+    color: light-dark(#204A87, #5b769c);
+}
+.org-comment-delimiter {
+    /* font-lock-comment-delimiter-face */
+    color: light-dark(#204A87, #5b769c);
+}
+.org-string {
+    /* font-lock-string-face */
+    color: #4E9A06;
+}
+.org-variable-name {
+    /* font-lock-variable-name-face */
+    color: #0084C8;
+    font-weight: bold;
+}
+.org-constant {
+    /* font-lock-constant-face */
+    color: #F5666D;
+}
+.org-preprocessor {
+    /* font-lock-preprocessor-face */
+    color: #A020F0;
+}
+.org-property-name {
+    /* font-lock-property-name-face */
+    color: #0084C8;
+    font-weight: bold;
+}
+.org-property-use {
+    /* font-lock-property-use-face */
+    color: #0084C8;
+    font-weight: bold;
+}
+.org-type {
+    /* font-lock-type-face */
+    color: #2F8B58;
+    font-weight: bold;
+}
+.org-makefile-targets {
+    color: #A52A2A;
+    font-weight: bold;
+}

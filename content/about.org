@@ -1,0 +1,10 @@
+#+Title: About
+#+OPTIONS: toc:nil
+
+* About Me
+I'm an IT tech/sysadmin. I like to poke at things and figure out how they work. I write code sometimes, and every once in a while it actually works.
+
+* About This Site
+Right now, this is mostly a place for me to dump info as I tinker with making things for the GameBoy. Also, looking at what makes some of its games tick.
+
+Absolutely *no* AI was used in the making of anything on this site. All of the intelligence displayed here, and lack thereof, is my own.
