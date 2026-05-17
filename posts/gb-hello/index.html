@@ -1,0 +1,815 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Making a "Hello World" Gameboy ROM</title>
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" href="/css/style.css" />
+<link rel="stylesheet" href="/css/fonts.css" />
+<link rel="icon" href="/images/favicon-32x32.png" />
+<meta name="color-scheme" content="light dark" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+</head>
+<body>
+<div id="preamble" class="status">
+<nav class="top-bar">
+  <ol>
+    <li class="nav-item"><a href="http://eleven.shitfor.brains/">Home</a>
+    </li>
+    <li class="nav-item"><a href="http://eleven.shitfor.brains/posts/">Posts</a>
+    </li>
+    <li class="nav-item"><a href="http://eleven.shitfor.brains/about.html">About</a>
+    </li>
+  </ol>
+</nav>
+</div>
+<div id="content" class="content">
+<h1 class="title">Making a "Hello World" Gameboy ROM</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org66532bc">Getting Started</a></li>
+<li><a href="#org8045f70">The Gameboy Screen</a></li>
+<li><a href="#orgfde3dcc">Creating a Font</a></li>
+<li><a href="#orga8a2710">Creating a Tilemap</a></li>
+<li><a href="#org27b70c5">Structure of a Gameboy ROM</a>
+<ul>
+<li><a href="#orgf612348">RST Vectors</a></li>
+<li><a href="#org68fe9ff">Interrupt Handlers</a></li>
+</ul>
+</li>
+<li><a href="#orga11db7b">The ROM Header</a></li>
+<li><a href="#orgbd92fa9">Getting our Message on the Screen</a></li>
+<li><a href="#orge13201b">Loading the Graphics</a></li>
+<li><a href="#org6fdb793">Building the ROM</a></li>
+<li><a href="#org2a9a795">Running the ROM</a></li>
+<li><a href="#orge070f0f">Now What?</a></li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-org66532bc" class="outline-2">
+<h2 id="org66532bc">Getting Started</h2>
+<div class="outline-text-2" id="text-org66532bc">
+<p>
+The Nintendo Gameboy is probably my favorite handheld gaming console. I've had A Gameboy Color since I was a child,
+and it still sits on my entertainment center today. I decided that I wanted to write a program to run on the device,
+so I started figuring out how to go about that. Here's a quick-and-dirty guide to getting started programming for the
+Gameboy.
+</p>
+
+
+<div id="orge111799" class="figure">
+<p><img src="./gbc.jpeg" alt="gbc.jpeg" />
+</p>
+</div>
+
+<p>
+Fortunately, it's pretty easy to get set up and developing for the Gameboy thanks to the <a href="https://rgbds.gbdev.io/">RGBDS toolchain</a>. Their documentation, especially the <a href="https://gbdev.io/pandocs">PanDocs</a>
+are essential reading if you want to learn about the Gameboy. In this post, I'll be going through the process of
+writing a "Hello World" program and running it on a Gameboy emulator (or real hardware if you have a flash cart or
+something).
+</p>
+
+<blockquote>
+<p>
+For this post, I'll only be talking about the Original (DMG/MGB) Gameboy. The Gameboy Color is
+compatible with Gameboy games, just with beefier hardware and of course a color display. There are some hardware quirks
+that are different between the models, but nothing that will affect anything we're doing.
+</p>
+</blockquote>
+
+<p>
+We'll start with creating the font and the background tilemap that will display our image. After those are
+created, we can get to the actual code and use them.
+</p>
+
+<p>
+All of the code for this project can be found <a href="https://github.com/HunterGReynolds/gameboy_hello_world">Here on Github</a>.
+</p>
+
+<p>
+You should get an emulator with a decent debugger and high accuracy. I use <a href="https://bgb.bircd.org/">the BGB emulator</a>,
+which is a Windows only application, but it's also tested on Wine. If you're looking for a good open-source emulator
+with a debugger, <a href="https://sameboy.github.io/">Sameboy is a good choice</a>.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org8045f70" class="outline-2">
+<h2 id="org8045f70">The Gameboy Screen</h2>
+<div class="outline-text-2" id="text-org8045f70">
+<p>
+The Gameboy displays graphics as 8 pixel x 8 pixel tiles. These tiles are loaded into VRAM and are then referenced
+from tilemaps. The background references one of two tilemaps, and is where most of what will be displayed on the screen
+is written, including text in most games (that I've looked at, anyway). There's a bit more to it, but we're only going
+to be using a single tilemap and only the background for now.
+</p>
+
+<p>
+The display area is 160 pixels wide and 144 pixels tall, or 20 tiles x 18 tiles. The background's tilemap is actually
+32 tiles x 32 tiles, so we only see a portion of it at a time. We're not going to worry about the tiles outside of the
+default display area for this program.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgfde3dcc" class="outline-2">
+<h2 id="orgfde3dcc">Creating a Font</h2>
+<div class="outline-text-2" id="text-orgfde3dcc">
+<p>
+In order to write anything, we need a font. The Gameboy doesn't supply anything, nor does RGBDS come
+with any assets. So we'll just create one with an image editing program, in my case GIMP. In GIMP, I found
+it helpful to use the grid overlay to create 8x8 pixel squares, and then using the 1 pixel brush, draw the characters.
+</p>
+
+
+<div id="orgc808462" class="figure">
+<p><img src="gimp.png" alt="gimp.png" />
+</p>
+</div>
+
+<p>
+Each character needs to fit within the 8x8 square, as that will be a single tile in the resulting graphics data.
+If we save the image as a png, we can use rgbgfx to convert the image into a format the Gameboy can use, and that can
+be imported directly into our code.
+</p>
+
+
+<div id="org16f196e" class="figure">
+<p><img src="font.png" alt="font.png" class="double_size" />
+</p>
+</div>
+
+<p>
+Once we have our font.png saved, we can convert it like so:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell-script">rgbgfx -u -o font.2bpp font.png
+</pre>
+</div>
+
+<p>
+The .2bpp stands for "2 bits per pixel", which is the default output mode for rgbgfx, and will give us all 4 colors
+of the Gameboy. The <code>-u</code> option will generate unique tiles, so all of the blank area we have will only yield a single
+blank tile in the output. We do need at least one blank tile, since every space that isn't going to be a letter will
+need to use the blank space. We have our font tileset, and now we're ready to start using it.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orga8a2710" class="outline-2">
+<h2 id="orga8a2710">Creating a Tilemap</h2>
+<div class="outline-text-2" id="text-orga8a2710">
+<blockquote>
+<p>
+I'm going to be using <span class="underline">$XX</span> notation for hexadecimal, because that's how you're going to be seeing it in the assembly.
+</p>
+</blockquote>
+
+<p>
+So we have a font, but we still have to actually write on something with it. For this, we're going to use a tilemap
+that will be applied to the background. The tilemap is a sequence of tile indices, starting from the top row. For this
+font, we can easily figure out the indices without having to actually look at anything, since we know it will start at
+the top left of the image, and move across, row by row. This means it will start with 'A' at index 0, and go on from
+there through the rest of the alphabet. Given the font, the indices are as follows:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">index (hex)</th>
+<th scope="col" class="org-left">character</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">0-25 ($00-$19)</td>
+<td class="org-left">A-Z</td>
+</tr>
+
+<tr>
+<td class="org-left">26 ($1A)</td>
+<td class="org-left">.</td>
+</tr>
+
+<tr>
+<td class="org-left">27 ($1B)</td>
+<td class="org-left">,</td>
+</tr>
+
+<tr>
+<td class="org-left">28 ($1C)</td>
+<td class="org-left">!</td>
+</tr>
+
+<tr>
+<td class="org-left">29 ($1D)</td>
+<td class="org-left">?</td>
+</tr>
+
+<tr>
+<td class="org-left">30 ($1E)</td>
+<td class="org-left">&lt;space&gt;</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+We could have also loaded the data into a ROM and loaded that into an emulator with a VRAM viewer like BGB to look at
+the tile data. Assuming you have a functioning ROM, which we don't yet.
+</p>
+
+<p>
+We define the tilemap with a bit of assembly.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-asm">
+    <span class="org-keyword">SECTION</span> <span class="org-string">"tilemap_data"</span>, ROM0
+
+<span class="org-function-name">tilemap</span>::
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $07, $04, $0B, $0B, $0E, $1B, $1E, $16, $0E, $11, $0B, $03, $1C, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+    <span class="org-keyword">db</span> $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+<span class="org-function-name">tilemap_end</span>::
+</pre>
+</div>
+
+<p>
+A quick explanation of what we're looking at here. We declare a <code>SECTION</code> we want to be located in <code>ROM0</code>, or
+just somewhere in the ROM. We then define 2 labels, <code>tilemap</code> and <code>tilemap_end</code>. The double colon at the end means
+to export the label so it can be referenced in other files.
+</p>
+
+<p>
+We have 18 lines starting with <code>db</code>, one for each row of tiles on the screen. We're defining a list of bytes along with
+the values that will be in them. These will be the indices for the tiles that appear on the screen. We only care about
+the first 20 in each row, but the remaining 12 must still be set to something. We'll just set them to 0.
+</p>
+
+<p>
+The whole screen is blank space except for one line in the middle that looks like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-asm"><span class="org-function-name">db</span> <span class="org-keyword">$1E</span>, $1E, $1E, $07, $04, $0B, $0B, $0E, $1B, $1E, $16, $0E, $11, $0B, $03, $1C, $1E, $1E, $1E, $1E, 0,0,0,0,0,0,0,0,0,0,0,0
+</pre>
+</div>
+
+<p>
+These indices will give us the tiles to spell out "HELLO, WORLD" roughly centered on the screen. Save this file as
+"hello_tilemap.asm" and it's ready to be used by our other code. At this point, we have everything we need to display
+our message, now we just need to make the Gameboy actually display it.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org27b70c5" class="outline-2">
+<h2 id="org27b70c5">Structure of a Gameboy ROM</h2>
+<div class="outline-text-2" id="text-org27b70c5">
+<p>
+A Gameboy ROM has a few locations that are defined for specific purposes, and at least the header must actually be
+correct to have a valid ROM. There's not too much to get them correct per specifications, so we'll go ahead and do that
+even if it's not strictly necessary. It'll make it easier to build upon when we do want to use them later, too.
+</p>
+</div>
+
+<div id="outline-container-orgf612348" class="outline-3">
+<h3 id="orgf612348">RST Vectors</h3>
+<div class="outline-text-3" id="text-orgf612348">
+<p>
+The first bit of a Gameboy rom looks like this:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">address</th>
+<th scope="col" class="org-left">purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">$00-$38</td>
+<td class="org-left">RST vectors, 8 bytes each, no prescribed purposes</td>
+</tr>
+
+<tr>
+<td class="org-left">$40-$60</td>
+<td class="org-left">Interrupt vectors, 8 bytes each (described below)</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+The 8 RST vectors each have 8 bytes of space before the next one, and there are opcodes to call each one. <code>RST $00</code>,
+<code>RST $08</code>, etc. You could put functions in here, if they fit, and many games seem to have these defined like this:
+</p>
+
+
+<div id="org0c77a9c" class="figure">
+<p><img src="red_rst.png" alt="red_rst.png" />
+</p>
+</div>
+
+<p>
+The first byte of each target is $ff, and the rest are $00. If you were to try to execute any of these, $ff is the
+opcode for <code>RST $38</code>, so you would just push $0039 to the stack and jump to $0038 forever. If you've ever seen a Gameboy
+game crash and display vertical lines over the screen, check out the contents of RAM in a debugger and there's a good
+chance that it's filled with a repeating pattern of <code>39 00</code> from the stack overflowing.
+</p>
+
+<p>
+We can go ahead and define ours the same way. If we end up hitting one of these, it's better to crash than nop slide
+into other valid code. It's much more difficult to debug this (ask me how I know). 
+</p>
+
+<p>
+In "rst_vectors.asm",
+</p>
+
+<div class="org-src-container">
+<pre class="src src-asm"><span class="org-function-name">DEF</span> <span class="org-keyword">NUM</span>_RST_VECTORS EQU 8
+
+<span class="org-function-name">SECTION</span> <span class="org-string">"rst_vectors"</span>, ROM0[$0000]
+<span class="org-function-name">FOR</span> <span class="org-keyword">n</span>, NUM_RST_VECTORS
+<span class="org-function-name">rst_vector</span>{d:n}::
+<span class="org-function-name">rst</span> <span class="org-keyword">$38</span>
+<span class="org-function-name">ds</span> <span class="org-keyword">ALIGN</span>[3]
+<span class="org-function-name">ENDR</span>
+</pre>
+</div>
+
+<p>
+I'm using a loop to define the RST vectors here, with the names being rst_vector0, rst_vector1, etc. For each one, we
+put in a RST $38 (opcode $ff), and then tell it to pad until the least 3 significant bits of the address are 0. This
+will get us to the end of the 8 byte section.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org68fe9ff" class="outline-3">
+<h3 id="org68fe9ff">Interrupt Handlers</h3>
+<div class="outline-text-3" id="text-org68fe9ff">
+<p>
+The interrupt vectors are similar to the RST vectors, but they are called whenever an interrupt occurs that we have
+enabled, and interrupts in general are enabled. They are as follows:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">address</th>
+<th scope="col" class="org-left">purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">$40</td>
+<td class="org-left">Vblank interrupt</td>
+</tr>
+
+<tr>
+<td class="org-left">$48</td>
+<td class="org-left">STAT interrupt</td>
+</tr>
+
+<tr>
+<td class="org-left">$50</td>
+<td class="org-left">Timer interrupt</td>
+</tr>
+
+<tr>
+<td class="org-left">$58</td>
+<td class="org-left">Serial interrupt</td>
+</tr>
+
+<tr>
+<td class="org-left">$60</td>
+<td class="org-left">Joypad interrupt</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+See <a href="https://gbdev.io/pandocs/Interrupt_Sources.html">here</a> for a more detailed description of each interrupt. The one
+we're interested in here is the vblank interrupt, as this will fire off once per frame, just after the screen is done
+being drawn. This is important when we want to access VRAM or OAM (sprites and such). See <a href="https://gbdev.io/pandocs/Rendering.html#ppu-modes">here</a> and <a href="https:io/pandocs/OAM_DMA_Transfer.html#oam-dma-bus-conflicts)">here</a> for explanations of what is accessible
+during the various states of the PPU.
+</p>
+
+<p>
+For now, though, we'll just do nothing but return with interrupts enabled on a vblank.
+</p>
+
+<p>
+To define the interrupt handlers, in "interrupts.asm",
+</p>
+
+<div class="org-src-container">
+<pre class="src src-asm">    <span class="org-keyword">SECTION</span> <span class="org-string">"interrupt_handler"</span>,ROM0[$0040]
+<span class="org-function-name">vblank_interrupt</span>::
+    <span class="org-keyword">reti</span>
+    <span class="org-keyword">ds</span> ALIGN[3]
+<span class="org-function-name">stat_interrupt</span>::
+    <span class="org-keyword">rst</span> $38
+    <span class="org-keyword">ds</span> ALIGN[3]
+<span class="org-function-name">timer_interrupt</span>::
+    <span class="org-keyword">rst</span> $38
+    <span class="org-keyword">ds</span> ALIGN[3]
+<span class="org-function-name">serial_interrupt</span>::
+    <span class="org-keyword">rst</span> $38
+    <span class="org-keyword">ds</span> ALIGN[3]
+<span class="org-function-name">joypad_interrupt</span>::
+    <span class="org-keyword">rst</span> $38
+    <span class="org-keyword">ds</span> ALIGN[3]
+
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga11db7b" class="outline-2">
+<h2 id="orga11db7b">The ROM Header</h2>
+<div class="outline-text-2" id="text-orga11db7b">
+<p>
+The ROM header is located at $0100 - $014f. The first 4 bytes are the only ones we're going to care about
+right now, and rgbfix will take care of the rest for us. See
+<a href="https://gbdev.io/pandocs/Power_Up_Sequence.html#monochrome-models-dmg0-dmg-mgb">this page</a> for an overview of the
+Gameboy boot process, and what the requirements for the header are. 
+</p>
+
+<p>
+Basically if the Nintendo logo and header checksum are good, the boot ROM will hand control over to our ROM at address
+$0100. Let's go ahead and create the "header.asm" file and define the header like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-asm"><span class="org-function-name">SECTION</span> <span class="org-string">"Header"</span>, ROM0[$0100]
+<span class="org-function-name">jp</span> <span class="org-keyword">entry</span>_point
+<span class="org-function-name">ds</span> <span class="org-keyword">$4d</span>, 0
+
+</pre>
+</div>
+
+<p>
+There's not much to it, because we're really mostly just allocating the space. The section directive here gives an
+explicit location for this code; it's to be located in ROM at address $0100. Next we jump to our real code, which will
+be defined elsewhere. Finally we allocate enough bytes to fill up the remaining space. We have $50 bytes of space to
+fill in total, and we've used 3 of them for the jump instruction, we just fill the remaining $4d bytes with 0. This
+will be filled in by rgbfix after we link our object code.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgbd92fa9" class="outline-2">
+<h2 id="orgbd92fa9">Getting our Message on the Screen</h2>
+<div class="outline-text-2" id="text-orgbd92fa9">
+<p>
+Now that we have the boilerplate bits for the ROM header done, we're ready to make the Gameboy display our message.
+We'll start with our entrypoint and main loop.
+</p>
+
+<blockquote>
+<p>
+Reminder: Vblank is the period of time between frames being drawn. It's necessary to wait for this period to perform
+certain actions and access VRAM. Refer back to <a href="#org68fe9ff">here for more info</a>.
+</p>
+</blockquote>
+
+<div class="warning-box" id="org1029721">
+<p>
+If you're running this on real hardware, make sure you disable the LCD/PPU <b><b>ONLY</b></b> during vblank. Disabling the
+LCD outside of vblank may cause physical damage to the screen.
+</p>
+
+</div>
+
+<div class="org-src-container">
+<pre class="src src-asm"><span class="org-function-name">INCLUDE</span> <span class="org-string">"hardware.inc"</span>
+
+    <span class="org-keyword">SECTION</span> <span class="org-string">"data"</span>, WRAM0
+<span class="org-function-name">frame_counter</span>::
+    <span class="org-keyword">db</span>
+
+    <span class="org-keyword">SECTION</span> <span class="org-string">"main"</span>, ROM0
+<span class="org-function-name">entry_point</span>::
+    <span class="org-comment-delimiter">;; </span><span class="org-comment">First thing we need to do is wait for Vblank so we can disable the LCD/PPU
+</span>    <span class="org-comment-delimiter">;; </span><span class="org-comment">this will allow us access to the VRAM without interruption. We enable the
+</span>    <span class="org-comment-delimiter">;; </span><span class="org-comment">interrupt flag here.
+</span>    <span class="org-keyword">ld</span> a, IEF_VBLANK
+    <span class="org-keyword">ldh</span> [rIE], a
+    <span class="org-comment-delimiter">;; </span><span class="org-comment">and then enable interrupts here. You don't want to do a halt immediately following
+</span>    <span class="org-comment-delimiter">;; </span><span class="org-comment">ei due to a bug, so we zero out a since we needed to anyway
+</span>    <span class="org-keyword">ei</span>
+    <span class="org-keyword">xor</span> a
+    <span class="org-keyword">halt</span>
+
+    <span class="org-comment-delimiter">;; </span><span class="org-comment">turn off the LCD/PPU
+</span>    <span class="org-keyword">ld</span> [rLCDC], a
+    <span class="org-comment-delimiter">;; </span><span class="org-comment">turn off the sound system. Recommended to do if it's not being used
+</span>    <span class="org-keyword">ld</span> [rNR52], a
+    <span class="org-keyword">ld</span> [frame_counter], a
+
+    <span class="org-keyword">call</span> load_graphics
+
+    <span class="org-comment-delimiter">;; </span><span class="org-comment">load the palatte colors for the background
+</span>    <span class="org-comment-delimiter">;; </span><span class="org-comment">$E4 = 11 10 01 00 -- black, dark gray, light gray, white
+</span>    <span class="org-keyword">ld</span> a, $E4
+    <span class="org-keyword">ld</span> [rBGP], a
+
+    <span class="org-comment-delimiter">;; </span><span class="org-comment">We've got the graphics loaded and everything ready to go, so let's turn the LCD
+</span>    <span class="org-comment-delimiter">;; </span><span class="org-comment">back on and run our main loop
+</span>    <span class="org-keyword">ld</span> a, LCDCF_ON | LCDCF_BGON
+    <span class="org-keyword">ld</span> [rLCDC], a
+
+<span class="org-function-name">main_loop</span>:
+    <span class="org-keyword">halt</span>
+    <span class="org-comment-delimiter">;; </span><span class="org-comment">halt the cpu and wait for an interrupt to occur
+</span>
+    <span class="org-keyword">ld</span> a, [frame_counter]
+    <span class="org-keyword">inc</span> a
+    <span class="org-keyword">ld</span> [frame_counter], a
+
+    <span class="org-keyword">jp</span> main_loop
+
+</pre>
+</div>
+
+<p>
+I went ahead and implemented a frame counter as a label within a WRAM0 section. Since it's data that we need to change
+during execution, it needs to be in RAM. We can't define the value of it when we define it because of this, so we have
+to initialize it while we're zeroing other data.
+</p>
+
+<p>
+The source is commented up so it shouldn't be too hard to follow. You'll want to grab a copy of "hardware.inc" from
+<a href="https://rgbds.gbdev.io/">the RGBDS website</a>. It's full of DEFs for various registers and flags, so you don't have
+to write them yourself or stick a bunch of magic numbers in your code.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge13201b" class="outline-2">
+<h2 id="orge13201b">Loading the Graphics</h2>
+<div class="outline-text-2" id="text-orge13201b">
+<p>
+The <code>call load_graphics</code> line in the previous file is doing quite a bit of heavy lifting there, so let's take a look
+at what it's actually doing. 
+</p>
+
+<div class="org-src-container">
+<pre class="src src-asm">    <span class="org-keyword">SECTION</span> <span class="org-string">"graphics_functions"</span>, ROM0
+<span class="org-function-name">load_graphics</span>::
+    <span class="org-comment-delimiter">;; </span><span class="org-comment">de = data source
+</span>    <span class="org-comment-delimiter">;; </span><span class="org-comment">hl = destination
+</span>    <span class="org-comment-delimiter">;; </span><span class="org-comment">bc = length
+</span>    <span class="org-keyword">ld</span> de, bg_tile_data
+    <span class="org-keyword">ld</span> hl, $9000
+    <span class="org-keyword">ld</span> bc, bg_tile_data_end - bg_tile_data
+    <span class="org-keyword">call</span> mem_copy
+
+    <span class="org-keyword">ld</span> de, tilemap
+    <span class="org-keyword">ld</span> hl, $9800
+    <span class="org-keyword">ld</span> bc, tilemap_end - tilemap
+    <span class="org-keyword">call</span> mem_copy
+    <span class="org-keyword">ret</span>
+
+<span class="org-function-name">mem_copy</span>::
+    <span class="org-keyword">ld</span> a, [de]
+    <span class="org-keyword">ld</span> [hli], a
+    <span class="org-keyword">inc</span> de
+    <span class="org-keyword">dec</span> bc
+    <span class="org-keyword">ld</span> a, b
+    <span class="org-keyword">or</span> a, c
+    <span class="org-keyword">jr</span> nz, mem_copy
+    <span class="org-keyword">ret</span>
+
+    <span class="org-keyword">SECTION</span> <span class="org-string">"graphics_data"</span>, ROM0
+<span class="org-function-name">bg_tile_data</span>:
+    <span class="org-keyword">INCBIN</span> <span class="org-string">"assets/font.2bpp"</span>
+<span class="org-function-name">bg_tile_data_end</span>:
+
+</pre>
+</div>
+
+<p>
+You'll see that there's a mem_copy helper function here. That's because we need to copy chunks of data from the ROM to
+the VRAM. The INCBIN directive below is pulling in the font data and giving it a start and end label. The end label is
+needed to do the math to determine the length of the data.
+</p>
+
+<p>
+Unfortunately, hardware.inc doesn't have anything very handy for the VRAM blocks, so we'll just go ahead and put in the
+numbers here. In a larger project, you'll probably want to write the DEFs yourself. In the default settings, tile data
+is read starting from address $9000, and the tilemap is read from $9800.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6fdb793" class="outline-2">
+<h2 id="org6fdb793">Building the ROM</h2>
+<div class="outline-text-2" id="text-org6fdb793">
+<p>
+At this point, all of the coding is finished, and all that's left to do is put it all together into a proper ROM. There
+are 3 basic steps needed to get our code ready to run.
+</p>
+
+<ol class="org-ol">
+<li>Assemble the source</li>
+<li>Link the objects</li>
+<li>Create a valid header and pad the ROM for size</li>
+</ol>
+
+<p>
+I use Make to automate these tasks, and I keep my sources organized as shown below:
+</p>
+
+
+<div id="org3968a93" class="figure">
+<p><img src="dir_tree.png" alt="dir_tree.png" />
+</p>
+</div>
+
+<p>
+Then I use make to build the ROM for me. Here's the Makefile for this project. One thing to note is that I don't have
+rgbds installed on my machine, I build it from source and keep multiple versions hanging around, one directory above
+where my projects live. You can either compile it yourself and match my directory structure, or if you install rgbds
+on your system, run make with one additional option to unset that variable and use what you have installed.
+</p>
+
+
+<p>
+If you compile rgbds yourself and have it in rgbds-v0.8.0 one directory up from the Makefile:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell-script">make
+</pre>
+</div>
+
+<p>
+or if you have rgbds installed and in your $PATH already:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-shell-script">make -e <span class="org-variable-name">RGBDS_ROOT</span>=
+</pre>
+</div>
+
+<p>
+The Makefile that builds the ROM is below:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-makefile"><span class="org-variable-name">RGBDS_ROOT</span> := ../rgbds-v0.8.0/
+<span class="org-variable-name">RGBASM</span> := ${<span class="org-variable-name">RGBDS_ROOT</span>}rgbasm
+<span class="org-variable-name">RGBLINK</span> := ${<span class="org-variable-name">RGBDS_ROOT</span>}rgblink
+<span class="org-variable-name">RGBFIX</span> := ${<span class="org-variable-name">RGBDS_ROOT</span>}rgbfix
+<span class="org-variable-name">RGBGFX</span> := ${<span class="org-variable-name">RGBDS_ROOT</span>}rgbgfx
+
+<span class="org-variable-name">SRC</span>     = $(<span class="org-variable-name">wildcard</span> src/*.asm)
+<span class="org-variable-name">OBJ</span>     = $(<span class="org-variable-name">patsubst</span> src/%.asm,obj/%.o,$(<span class="org-variable-name">SRC</span>))
+<span class="org-variable-name">IMG_SRC</span> = $(<span class="org-variable-name">wildcard</span> assets/*.png)
+<span class="org-variable-name">IMG</span> = $(<span class="org-variable-name">patsubst</span> assets/%.png,assets/%.2bpp,$(<span class="org-variable-name">IMG_SRC</span>))
+
+<span class="org-variable-name">SRCD</span> := src
+<span class="org-variable-name">OBJD</span> := obj
+<span class="org-variable-name">INCD</span> := include
+<span class="org-variable-name">IMGD</span> := assets
+
+<span class="org-variable-name">ROMS</span> := hello_world.gb
+
+<span class="org-makefile-targets">all</span>: $(<span class="org-variable-name">ROMS</span>)
+
+<span class="org-makefile-targets">%.gb</span>: $(<span class="org-variable-name">IMG</span>) $(<span class="org-variable-name">OBJ</span>)
+        $(<span class="org-variable-name">RGBLINK</span>) -m $(<span class="org-variable-name">*F</span>).map -n $(<span class="org-variable-name">*F</span>).sym -o <span class="org-makefile-targets">$</span><span class="org-makefile-targets"><span class="org-constant">@</span></span> $(<span class="org-variable-name">OBJ</span>)
+        $(<span class="org-variable-name">RGBFIX</span>) -v -p 0xFF <span class="org-makefile-targets">$</span><span class="org-makefile-targets"><span class="org-constant">@</span></span>
+
+<span class="org-makefile-targets">assets/%.2bpp</span>: $(<span class="org-variable-name">IMGD</span>)/%.png
+        $(<span class="org-variable-name">RGBGFX</span>) -u -o <span class="org-makefile-targets">$</span><span class="org-makefile-targets"><span class="org-constant">@</span></span> $<span class="org-constant">^</span>
+
+<span class="org-makefile-targets">$(</span><span class="org-variable-name"><span class="org-makefile-targets">OBJD</span></span><span class="org-makefile-targets">)/%.o</span>: $(<span class="org-variable-name">SRCD</span>)/%.asm $(<span class="org-variable-name">IMG</span>)
+        @mkdir -p $(<span class="org-variable-name">OBJD</span>)
+        $(<span class="org-variable-name">RGBASM</span>) -o <span class="org-makefile-targets">$</span><span class="org-makefile-targets"><span class="org-constant">@</span></span> $<span class="org-constant">&lt;</span> -I $(<span class="org-variable-name">INCD</span>)
+
+<span class="org-makefile-targets">.PHONY</span>: clean
+
+<span class="org-makefile-targets">clean</span>:
+        @rm $(<span class="org-variable-name">OBJD</span>)/*.o
+        @rm $(<span class="org-variable-name">IMGD</span>)/*.2bpp
+        @rm *.{gb,map,sym}
+        @rmdir $(<span class="org-variable-name">OBJD</span>)
+
+</pre>
+</div>
+
+<p>
+I try to keep my makefiles fairly flexible and easy to extend for new projects. Dropping new sources and png files
+in place will work without any further modifications. Running different commands, or using additional locations, will
+mean you'll need to add those targets to the Makefile.
+</p>
+
+<p>
+This Makefile converts png files in assets/ to .2bpp files, assembles any asm file in src/, putting the object files
+in the obj/ directory. Then it links them to create the ROM, and rgbfix creates the header and pads the ROM to a valid
+cartridge size.
+</p>
+
+<p>
+A couple of commands of note are the rgblink command, which generates a .map file and a .sym file with the <code>-m</code> and
+<code>-n</code> options, respectively. These files should sit in the same directory as your ROM for BGB to pick them up for use
+in the debugger.
+</p>
+
+<p>
+The rgbfix command is also one that does a couple of jobs. First, the <code>-v</code> options validates and corrects the header.
+This includes the Nintendo logo and the checksums. You can tell rgbfix to set other header options, but the defaults
+are fine for this project. The <code>-p 0xFF</code> option tells it to pad the ROM size to a valid cartridge size, using $ff bytes
+to pad with. Valid cartridge sizes are powers of 2 between 32KB and 8192KB, inclusive.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org2a9a795" class="outline-2">
+<h2 id="org2a9a795">Running the ROM</h2>
+<div class="outline-text-2" id="text-org2a9a795">
+<p>
+The result is a proper ROM, so now we just load it into an emulator and&#x2026;
+</p>
+
+
+<div id="org47ec2f2" class="figure">
+<p><img src="bgb.png" alt="bgb.png" class="bgb_screenshot" />
+</p>
+</div>
+
+<p>
+We have a functioning ROM now. If you have a debugger open, you can check the sym or map file for the location of
+the <code>frame_counter</code> label (which should be $c000, the beginning of WRAM) and watch it counting frames.
+</p>
+</div>
+</div>
+
+<div id="outline-container-orge070f0f" class="outline-2">
+<h2 id="orge070f0f">Now What?</h2>
+<div class="outline-text-2" id="text-orge070f0f">
+<p>
+Now that we have a functioning ROM, we have a reasonable base to start building on top of. I'll be using this ROM as
+a starting point for building new examples.
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<footer>
+    &copy; Hunter Reynolds 2026 All posts and images on this website are being made available under the <a href="https://creativecommons.org/licenses/by/4.0/"> CC-BY 4.0 License </a>. Code snippets are made available under the <a href="https://opensource.org/license/mit">MIT License.</a>
+</footer>
+</div>
+</body>
+</html>

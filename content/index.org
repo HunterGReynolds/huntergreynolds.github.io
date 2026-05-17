@@ -1,6 +1,0 @@
-#+title: Hunter's Stuff
-
-This is a website, of a sort. Here you can find my ramblings about the Nintendo GameBoy, its games,  and my experiments in developing for the device.
-
-1. [[file:posts/][Find my posts here]]
-2. [[https://github.com/HunterGReynolds/][Find my GitHub here]]
