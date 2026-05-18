@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="/css/fonts.css" />
 <link rel="icon" href="/images/favicon-32x32.png" />
 <meta name="color-scheme" content="light dark" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -34,29 +35,29 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org2dd34a5">Getting Started</a></li>
-<li><a href="#org19ce3d1">The Gameboy Screen</a></li>
-<li><a href="#orgcc3d760">Creating a Font</a></li>
-<li><a href="#org2cf84a2">Creating a Tilemap</a></li>
-<li><a href="#orgd23a455">Structure of a Gameboy ROM</a>
+<li><a href="#org29cadb7">Getting Started</a></li>
+<li><a href="#org4f95d91">The Gameboy Screen</a></li>
+<li><a href="#org94f45cb">Creating a Font</a></li>
+<li><a href="#org2bb7cca">Creating a Tilemap</a></li>
+<li><a href="#org161ba54">Structure of a Gameboy ROM</a>
 <ul>
-<li><a href="#org0483520">RST Vectors</a></li>
-<li><a href="#orgebf3dfd">Interrupt Handlers</a></li>
+<li><a href="#org94f24c6">RST Vectors</a></li>
+<li><a href="#orgc4831de">Interrupt Handlers</a></li>
 </ul>
 </li>
-<li><a href="#org8deaba1">The ROM Header</a></li>
-<li><a href="#orgae6a23a">Getting our Message on the Screen</a></li>
-<li><a href="#org23368e2">Loading the Graphics</a></li>
-<li><a href="#orgb52a615">Building the ROM</a></li>
-<li><a href="#org61548b0">Running the ROM</a></li>
-<li><a href="#org8c5a94e">Now What?</a></li>
+<li><a href="#org767b05c">The ROM Header</a></li>
+<li><a href="#org783fba3">Getting our Message on the Screen</a></li>
+<li><a href="#org6c8555c">Loading the Graphics</a></li>
+<li><a href="#org62c21b1">Building the ROM</a></li>
+<li><a href="#org24d25af">Running the ROM</a></li>
+<li><a href="#orgde0149c">Now What?</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org2dd34a5" class="outline-2">
-<h2 id="org2dd34a5">Getting Started</h2>
-<div class="outline-text-2" id="text-org2dd34a5">
+<div id="outline-container-org29cadb7" class="outline-2">
+<h2 id="org29cadb7">Getting Started</h2>
+<div class="outline-text-2" id="text-org29cadb7">
 <p>
 The Nintendo Gameboy is probably my favorite handheld gaming console. I've had A Gameboy Color since I was a child,
 and it still sits on my entertainment center today. I decided that I wanted to write a program to run on the device,
@@ -65,7 +66,7 @@ Gameboy.
 </p>
 
 
-<div id="orgc23b511" class="figure">
+<div id="org09120e5" class="figure">
 <p><img src="./gbc.jpeg" alt="gbc.jpeg" />
 </p>
 </div>
@@ -102,9 +103,9 @@ with a debugger, <a href="https://sameboy.github.io/">Sameboy is a good choice</
 </div>
 </div>
 
-<div id="outline-container-org19ce3d1" class="outline-2">
-<h2 id="org19ce3d1">The Gameboy Screen</h2>
-<div class="outline-text-2" id="text-org19ce3d1">
+<div id="outline-container-org4f95d91" class="outline-2">
+<h2 id="org4f95d91">The Gameboy Screen</h2>
+<div class="outline-text-2" id="text-org4f95d91">
 <p>
 The Gameboy displays graphics as 8 pixel x 8 pixel tiles. These tiles are loaded into VRAM and are then referenced
 from tilemaps. The background references one of two tilemaps, and is where most of what will be displayed on the screen
@@ -120,9 +121,9 @@ default display area for this program.
 </div>
 </div>
 
-<div id="outline-container-orgcc3d760" class="outline-2">
-<h2 id="orgcc3d760">Creating a Font</h2>
-<div class="outline-text-2" id="text-orgcc3d760">
+<div id="outline-container-org94f45cb" class="outline-2">
+<h2 id="org94f45cb">Creating a Font</h2>
+<div class="outline-text-2" id="text-org94f45cb">
 <p>
 In order to write anything, we need a font. The Gameboy doesn't supply anything, nor does RGBDS come
 with any assets. So we'll just create one with an image editing program, in my case GIMP. In GIMP, I found
@@ -130,7 +131,7 @@ it helpful to use the grid overlay to create 8x8 pixel squares, and then using t
 </p>
 
 
-<div id="org2741e07" class="figure">
+<div id="orga5ede95" class="figure">
 <p><img src="gimp.png" alt="gimp.png" />
 </p>
 </div>
@@ -142,7 +143,7 @@ be imported directly into our code.
 </p>
 
 
-<div id="org38d4abd" class="figure">
+<div id="org2a2cf50" class="figure">
 <p><img src="font.png" alt="font.png" class="double_size" />
 </p>
 </div>
@@ -165,9 +166,9 @@ need to use the blank space. We have our font tileset, and now we're ready to st
 </div>
 </div>
 
-<div id="outline-container-org2cf84a2" class="outline-2">
-<h2 id="org2cf84a2">Creating a Tilemap</h2>
-<div class="outline-text-2" id="text-org2cf84a2">
+<div id="outline-container-org2bb7cca" class="outline-2">
+<h2 id="org2bb7cca">Creating a Tilemap</h2>
+<div class="outline-text-2" id="text-org2bb7cca">
 <blockquote>
 <p>
 I'm going to be using <span class="underline">$XX</span> notation for hexadecimal, because that's how you're going to be seeing it in the assembly.
@@ -294,9 +295,9 @@ our message, now we just need to make the Gameboy actually display it.
 </div>
 </div>
 
-<div id="outline-container-orgd23a455" class="outline-2">
-<h2 id="orgd23a455">Structure of a Gameboy ROM</h2>
-<div class="outline-text-2" id="text-orgd23a455">
+<div id="outline-container-org161ba54" class="outline-2">
+<h2 id="org161ba54">Structure of a Gameboy ROM</h2>
+<div class="outline-text-2" id="text-org161ba54">
 <p>
 A Gameboy ROM has a few locations that are defined for specific purposes, and at least the header must actually be
 correct to have a valid ROM. There's not too much to get them correct per specifications, so we'll go ahead and do that
@@ -304,9 +305,9 @@ even if it's not strictly necessary. It'll make it easier to build upon when we 
 </p>
 </div>
 
-<div id="outline-container-org0483520" class="outline-3">
-<h3 id="org0483520">RST Vectors</h3>
-<div class="outline-text-3" id="text-org0483520">
+<div id="outline-container-org94f24c6" class="outline-3">
+<h3 id="org94f24c6">RST Vectors</h3>
+<div class="outline-text-3" id="text-org94f24c6">
 <p>
 The first bit of a Gameboy rom looks like this:
 </p>
@@ -344,7 +345,7 @@ The 8 RST vectors each have 8 bytes of space before the next one, and there are 
 </p>
 
 
-<div id="org5229f27" class="figure">
+<div id="org80ddb49" class="figure">
 <p><img src="red_rst.png" alt="red_rst.png" />
 </p>
 </div>
@@ -385,9 +386,9 @@ will get us to the end of the 8 byte section.
 </div>
 </div>
 
-<div id="outline-container-orgebf3dfd" class="outline-3">
-<h3 id="orgebf3dfd">Interrupt Handlers</h3>
-<div class="outline-text-3" id="text-orgebf3dfd">
+<div id="outline-container-orgc4831de" class="outline-3">
+<h3 id="orgc4831de">Interrupt Handlers</h3>
+<div class="outline-text-3" id="text-orgc4831de">
 <p>
 The interrupt vectors are similar to the RST vectors, but they are called whenever an interrupt occurs that we have
 enabled, and interrupts in general are enabled. They are as follows:
@@ -474,9 +475,9 @@ To define the interrupt handlers, in "interrupts.asm",
 </div>
 </div>
 
-<div id="outline-container-org8deaba1" class="outline-2">
-<h2 id="org8deaba1">The ROM Header</h2>
-<div class="outline-text-2" id="text-org8deaba1">
+<div id="outline-container-org767b05c" class="outline-2">
+<h2 id="org767b05c">The ROM Header</h2>
+<div class="outline-text-2" id="text-org767b05c">
 <p>
 The ROM header is located at $0100 - $014f. The first 4 bytes are the only ones we're going to care about
 right now, and rgbfix will take care of the rest for us. See
@@ -507,9 +508,9 @@ will be filled in by rgbfix after we link our object code.
 </div>
 </div>
 
-<div id="outline-container-orgae6a23a" class="outline-2">
-<h2 id="orgae6a23a">Getting our Message on the Screen</h2>
-<div class="outline-text-2" id="text-orgae6a23a">
+<div id="outline-container-org783fba3" class="outline-2">
+<h2 id="org783fba3">Getting our Message on the Screen</h2>
+<div class="outline-text-2" id="text-org783fba3">
 <p>
 Now that we have the boilerplate bits for the ROM header done, we're ready to make the Gameboy display our message.
 We'll start with our entrypoint and main loop.
@@ -518,11 +519,11 @@ We'll start with our entrypoint and main loop.
 <blockquote>
 <p>
 Reminder: Vblank is the period of time between frames being drawn. It's necessary to wait for this period to perform
-certain actions and access VRAM. Refer back to <a href="#orgebf3dfd">here for more info</a>.
+certain actions and access VRAM. Refer back to <a href="#orgc4831de">here for more info</a>.
 </p>
 </blockquote>
 
-<div class="warning-box" id="orgf14c1a3">
+<div class="warning-box" id="org2fd1759">
 <p>
 If you're running this on real hardware, make sure you disable the LCD/PPU <b><b>ONLY</b></b> during vblank. Disabling the
 LCD outside of vblank may cause physical damage to the screen.
@@ -595,9 +596,9 @@ to write them yourself or stick a bunch of magic numbers in your code.
 </div>
 </div>
 
-<div id="outline-container-org23368e2" class="outline-2">
-<h2 id="org23368e2">Loading the Graphics</h2>
-<div class="outline-text-2" id="text-org23368e2">
+<div id="outline-container-org6c8555c" class="outline-2">
+<h2 id="org6c8555c">Loading the Graphics</h2>
+<div class="outline-text-2" id="text-org6c8555c">
 <p>
 The <code>call load_graphics</code> line in the previous file is doing quite a bit of heavy lifting there, so let's take a look
 at what it's actually doing. 
@@ -652,9 +653,9 @@ is read starting from address $9000, and the tilemap is read from $9800.
 </div>
 </div>
 
-<div id="outline-container-orgb52a615" class="outline-2">
-<h2 id="orgb52a615">Building the ROM</h2>
-<div class="outline-text-2" id="text-orgb52a615">
+<div id="outline-container-org62c21b1" class="outline-2">
+<h2 id="org62c21b1">Building the ROM</h2>
+<div class="outline-text-2" id="text-org62c21b1">
 <p>
 At this point, all of the coding is finished, and all that's left to do is put it all together into a proper ROM. There
 are 3 basic steps needed to get our code ready to run.
@@ -671,7 +672,7 @@ I use Make to automate these tasks, and I keep my sources organized as shown bel
 </p>
 
 
-<div id="orgce6232f" class="figure">
+<div id="org46acff3" class="figure">
 <p><img src="dir_tree.png" alt="dir_tree.png" />
 </p>
 </div>
@@ -776,15 +777,15 @@ to pad with. Valid cartridge sizes are powers of 2 between 32KB and 8192KB, incl
 </div>
 </div>
 
-<div id="outline-container-org61548b0" class="outline-2">
-<h2 id="org61548b0">Running the ROM</h2>
-<div class="outline-text-2" id="text-org61548b0">
+<div id="outline-container-org24d25af" class="outline-2">
+<h2 id="org24d25af">Running the ROM</h2>
+<div class="outline-text-2" id="text-org24d25af">
 <p>
 The result is a proper ROM, so now we just load it into an emulator and&#x2026;
 </p>
 
 
-<div id="org50db07e" class="figure">
+<div id="orgd53ddb5" class="figure">
 <p><img src="bgb.png" alt="bgb.png" class="bgb_screenshot" />
 </p>
 </div>
@@ -796,9 +797,9 @@ the <code>frame_counter</code> label (which should be $c000, the beginning of WR
 </div>
 </div>
 
-<div id="outline-container-org8c5a94e" class="outline-2">
-<h2 id="org8c5a94e">Now What?</h2>
-<div class="outline-text-2" id="text-org8c5a94e">
+<div id="outline-container-orgde0149c" class="outline-2">
+<h2 id="orgde0149c">Now What?</h2>
+<div class="outline-text-2" id="text-orgde0149c">
 <p>
 Now that we have a functioning ROM, we have a reasonable base to start building on top of. I'll be using this ROM as
 a starting point for building new examples.

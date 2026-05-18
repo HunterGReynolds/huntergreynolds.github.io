@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="/css/fonts.css" />
 <link rel="icon" href="/images/favicon-32x32.png" />
 <meta name="color-scheme" content="light dark" />
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cascadia+Mono:ital,wght@0,200..700;1,200..700&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
@@ -34,30 +35,30 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org5e2e8df">Getting Started</a></li>
-<li><a href="#orgf6fcb20">Creating our Sprite Graphic</a></li>
-<li><a href="#org21397bd">What is an Object</a></li>
-<li><a href="#org944d100">Looking at an Example of a Sprite</a></li>
-<li><a href="#org9e3ba38">Getting our Sprite Onto the Screen</a>
+<li><a href="#orga844850">Getting Started</a></li>
+<li><a href="#orgb73fd8a">Creating our Sprite Graphic</a></li>
+<li><a href="#org189eb92">What is an Object</a></li>
+<li><a href="#org92d52e0">Looking at an Example of a Sprite</a></li>
+<li><a href="#org59968f5">Getting our Sprite Onto the Screen</a>
 <ul>
-<li><a href="#org48a6987">Understanding VRAM layout</a></li>
-<li><a href="#orgf5ab927">Object Attribute Memory (OAM)</a>
+<li><a href="#org9cfed30">Understanding VRAM layout</a></li>
+<li><a href="#org875cf41">Object Attribute Memory (OAM)</a>
 <ul>
-<li><a href="#orgc66df21">OAM DMA Copy</a></li>
-<li><a href="#org1e8571c">Writing our sprite into OAM</a></li>
+<li><a href="#orgef0fe2d">OAM DMA Copy</a></li>
+<li><a href="#org983ab97">Writing our sprite into OAM</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#org66d4e51">Initializing and Setting up the Main Loop</a></li>
-<li><a href="#org6b4841c">Running the ROM</a></li>
+<li><a href="#org18c0be6">Initializing and Setting up the Main Loop</a></li>
+<li><a href="#org292a932">Running the ROM</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org5e2e8df" class="outline-2">
-<h2 id="org5e2e8df">Getting Started</h2>
-<div class="outline-text-2" id="text-org5e2e8df">
+<div id="outline-container-orga844850" class="outline-2">
+<h2 id="orga844850">Getting Started</h2>
+<div class="outline-text-2" id="text-orga844850">
 <blockquote>
 <p>
 This post is a continuation of <a href="../gb-hello/">this previous post</a>.
@@ -74,7 +75,7 @@ whom I've dubbed "Little Fella".
 </p>
 
 
-<div id="org640fe33" class="figure">
+<div id="org9d65fb5" class="figure">
 <p><img src="little_fella.png" alt="little_fella.png" class="double_size" />
 </p>
 </div>
@@ -92,9 +93,9 @@ If you'd like to get the code for this post, you can clone it from
 </div>
 </div>
 
-<div id="outline-container-orgf6fcb20" class="outline-2">
-<h2 id="orgf6fcb20">Creating our Sprite Graphic</h2>
-<div class="outline-text-2" id="text-orgf6fcb20">
+<div id="outline-container-orgb73fd8a" class="outline-2">
+<h2 id="orgb73fd8a">Creating our Sprite Graphic</h2>
+<div class="outline-text-2" id="text-orgb73fd8a">
 <p>
 Before we can talk about the Gameboy side of things, first thing we need to do is create the image we'll be using
 as a sprite. You can use the little fella just above (it's already in the Github repo for this post), or you can
@@ -105,16 +106,16 @@ assets file of the project directory.
 </p>
 
 
-<div id="org9813dac" class="figure">
+<div id="org7021ed1" class="figure">
 <p><img src="little_fella_GIMP.png" alt="little_fella_GIMP.png" />
 </p>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org21397bd" class="outline-2">
-<h2 id="org21397bd">What is an Object</h2>
-<div class="outline-text-2" id="text-org21397bd">
+<div id="outline-container-org189eb92" class="outline-2">
+<h2 id="org189eb92">What is an Object</h2>
+<div class="outline-text-2" id="text-org189eb92">
 <p>
 The Gameboy stores information about objects in a section of memory on the PPU called OAM (Object Attribute
 Memory). There are 160 bytes split into 4-byte chunks, or 40 objects. The layout of each object looks like this:
@@ -164,9 +165,9 @@ flags such as mirroring the tile.
 </div>
 </div>
 
-<div id="outline-container-org944d100" class="outline-2">
-<h2 id="org944d100">Looking at an Example of a Sprite</h2>
-<div class="outline-text-2" id="text-org944d100">
+<div id="outline-container-org92d52e0" class="outline-2">
+<h2 id="org92d52e0">Looking at an Example of a Sprite</h2>
+<div class="outline-text-2" id="text-org92d52e0">
 <p>
 You might have noticed that an object specifies a tile, which are all 8x8 pixels. But the character above is 16x16
 pixels. Our sprite is comprised of 4 objects, each a single tile. This is a common size to use for sprites, and the
@@ -182,7 +183,7 @@ is set on the LCD control, it's global, so you can't apply it selectively.
 </blockquote>
 
 
-<div id="orge017592" class="figure">
+<div id="org7e82fcf" class="figure">
 <p><img src="bgb_red.png" alt="bgb_red.png" class="bgb_screenshot" />
 </p>
 </div>
@@ -207,9 +208,9 @@ currently hidden, so you can see what is actually being displayed.
 </div>
 </div>
 
-<div id="outline-container-org9e3ba38" class="outline-2">
-<h2 id="org9e3ba38">Getting our Sprite Onto the Screen</h2>
-<div class="outline-text-2" id="text-org9e3ba38">
+<div id="outline-container-org59968f5" class="outline-2">
+<h2 id="org59968f5">Getting our Sprite Onto the Screen</h2>
+<div class="outline-text-2" id="text-org59968f5">
 <p>
 There a 4 basic things we need to do to get our sprite to be displayed:
 </p>
@@ -250,9 +251,9 @@ white palette.
 </p>
 </div>
 
-<div id="outline-container-org48a6987" class="outline-3">
-<h3 id="org48a6987">Understanding VRAM layout</h3>
-<div class="outline-text-3" id="text-org48a6987">
+<div id="outline-container-org9cfed30" class="outline-3">
+<h3 id="org9cfed30">Understanding VRAM layout</h3>
+<div class="outline-text-3" id="text-org9cfed30">
 <p>
 Loading the tile data is something we're already familiar with, we load object tiles the same way we load background tiles.
 This time, we'll want to make sure we understand the different sections of VRAM.
@@ -338,9 +339,9 @@ This gets our tile data loaded and ready to be referenced by our objects. Speaki
 </div>
 </div>
 
-<div id="outline-container-orgf5ab927" class="outline-3">
-<h3 id="orgf5ab927">Object Attribute Memory (OAM)</h3>
-<div class="outline-text-3" id="text-orgf5ab927">
+<div id="outline-container-org875cf41" class="outline-3">
+<h3 id="org875cf41">Object Attribute Memory (OAM)</h3>
+<div class="outline-text-3" id="text-org875cf41">
 <p>
 Object Attribute Memory, or OAM, is a small 160 byte section of memory located on the PPU. This is where we want to write
 the data for our sprites. Since we are using 8x8 objects and our sprite is 16x16, we are going to use 4 objects to draw
@@ -450,9 +451,9 @@ later.
 </p>
 </div>
 
-<div id="outline-container-orgc66df21" class="outline-4">
-<h4 id="orgc66df21">OAM DMA Copy</h4>
-<div class="outline-text-4" id="text-orgc66df21">
+<div id="outline-container-orgef0fe2d" class="outline-4">
+<h4 id="orgef0fe2d">OAM DMA Copy</h4>
+<div class="outline-text-4" id="text-orgef0fe2d">
 <p>
 I highly recommend reading <a href="https://gbdev.io/pandocs/OAM_DMA_Transfer.html">the PanDocs</a> page about OAM DMA transfer, as
 there is detail on that page that I'm not going to cover here. Additionally, the code initiating and then busy-waiting is
@@ -474,9 +475,9 @@ $XX00 - $XX9F (160 bytes) into OAM. This is why the shadow OAM needs to be align
 </div>
 </div>
 
-<div id="outline-container-org1e8571c" class="outline-4">
-<h4 id="org1e8571c">Writing our sprite into OAM</h4>
-<div class="outline-text-4" id="text-org1e8571c">
+<div id="outline-container-org983ab97" class="outline-4">
+<h4 id="org983ab97">Writing our sprite into OAM</h4>
+<div class="outline-text-4" id="text-org983ab97">
 <p>
 All of the above is neccessary to understand what it is we're trying to accomplish, but none of it yet gets our sprite
 actually loaded into OAM to be drawn. We're now ready to go ahead and write code to do that. First, the code itself:
@@ -557,9 +558,9 @@ for how the tiles are ordered in this example, but if you have tiles in a differ
 </div>
 </div>
 
-<div id="outline-container-org66d4e51" class="outline-2">
-<h2 id="org66d4e51">Initializing and Setting up the Main Loop</h2>
-<div class="outline-text-2" id="text-org66d4e51">
+<div id="outline-container-org18c0be6" class="outline-2">
+<h2 id="org18c0be6">Initializing and Setting up the Main Loop</h2>
+<div class="outline-text-2" id="text-org18c0be6">
 <p>
 We're almost ready to run our code now, the only thing left to do is make a few changes to initialization and do a little
 housekeeping. First thing, I took the <code>mem_copy</code> function from the old <code>graphics.asm</code> file and broke it out into its own
@@ -688,16 +689,16 @@ loop. Here's what it looks like now:
 </div>
 </div>
 
-<div id="outline-container-org6b4841c" class="outline-2">
-<h2 id="org6b4841c">Running the ROM</h2>
-<div class="outline-text-2" id="text-org6b4841c">
+<div id="outline-container-org292a932" class="outline-2">
+<h2 id="org292a932">Running the ROM</h2>
+<div class="outline-text-2" id="text-org292a932">
 <p>
 With all of that done, we're ready to build the ROM. The only change to the makefile is the ROM name, everything else
 is exactly the same as last time. Once it's built, we pop it in the emulator and&#x2026;
 </p>
 
 
-<div id="org53ab500" class="figure">
+<div id="orgf60a4a7" class="figure">
 <p><img src="sprite_display.png" alt="sprite_display.png" class="bgb_screenshot" />
 </p>
 </div>
